@@ -4,99 +4,7 @@
     <meta charset="UTF-8">
     <title>Log Analyzer Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            margin: 0;
-            background: linear-gradient(135deg, #1f2937, #111827);
-            color: #fff;
-            text-align: center;
-        }
-
-        h2 {
-            margin-top: 30px;
-            font-weight: 600;
-        }
-
-        h3 {
-    margin-top: 50px;
-}
-
-        #dropArea {
-    width: 60%;
-    margin: 40px auto;
-    padding: 60px;
-    border: 2px dashed #6366f1;
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(10px);
-    font-size: 20px;
-    font-weight: 500;
-    color: #e0e7ff;
-    transition: 0.3s;
-}
-
-        #dropArea:hover {
-            background: rgba(79, 70, 229, 0.1);
-            transform: scale(1.02);
-        }
-
-        .card-container {
-    display: flex;
-    justify-content: center;
-    gap: 25px;
-    margin: 40px 0;
-    flex-wrap: wrap;
-}
-
-        .card {
-            background: rgba(255, 255, 255, 0.08);
-            padding: 20px 40px;
-            border-radius: 12px;
-            backdrop-filter: blur(8px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-            font-size: 18px;
-            transition: 0.3s;
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-        }
-
-        canvas {
-            margin-top: 20px;
-            background: #fff;
-            padding: 20px;
-            border-radius: 12px;
-        }
-
-        ul {
-            list-style: none;
-            padding: 0;
-        }
-
-        li {
-            background: rgba(255,255,255,0.08);
-            margin: 10px auto;
-            padding: 10px;
-            width: 40%;
-            border-radius: 8px;
-        }
-
-        button {
-            padding: 10px 20px;
-            background: #4f46e5;
-            border: none;
-            border-radius: 8px;
-            color: white;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        button:hover {
-            background: #6366f1;
-        }
-    </style>
+    <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
 
@@ -104,6 +12,7 @@
 
 <div id="dropArea">
     Drag & Drop Log File Here
+    <p id="fileName"></p>
 </div>
 
 <div id="summary"></div>
@@ -112,113 +21,6 @@
 
 <h3>🔥 Top URLs</h3>
 <ul id="topUrls"></ul>
-
-<script>
-
-    console.log("JS Loaded");
-
-    let chart;
-
-    function upload() {
-        let file = document.getElementById("fileInput").files[0];
-        uploadFile(file);
-    }
-
-    function uploadFile(file) {
-        let formData = new FormData();
-        formData.append("file", file);
-
-        fetch("/api/logs/upload", {
-            method: "POST",
-            body: formData
-        })
-        .then(res => res.json())
-        .then(data => showResult(data));
-    }
-
-    function showResult(data) {
-
-        // 🔥 Proper template string
-       document.getElementById("summary").innerHTML = `
-    <div class="card-container">
-        <div class="card">⏱ Processing Time<br><b>${data.processingTimeMs} ms</b></div>
-        <div class="card">📦 Total Requests<br><b>${data.totalRequests}</b></div>
-        <div class="card">💾 Total Bytes<br><b>${data.totalBytes}</b></div>
-    </div>
-`;
-
-        let statusLabels = Object.keys(data.statusCount);
-        let statusValues = Object.values(data.statusCount);
-
-        if (chart) chart.destroy();
-
-        chart = new Chart(document.getElementById("statusChart"), {
-    type: "bar",
-    data: {
-        labels: statusLabels,
-        datasets: [{
-            label: "Status Codes",
-            data: statusValues,
-            backgroundColor: "#6366f1"
-        }]
-    },
-    options: {
-        responsive: true,
-        plugins: {
-            legend: {
-                labels: {
-                    color: "#000"
-                }
-            }
-        },
-        scales: {
-            x: {
-                ticks: { color: "#000" }
-            },
-            y: {
-                ticks: { color: "#000" }
-            }
-        }
-    }
-});
-
-        let topUrlsList = document.getElementById("topUrls");
-        topUrlsList.innerHTML = "";
-
-        for (let url in data.topUrls) {
-            let li = document.createElement("li");
-            li.textContent = url + " → " + data.topUrls[url];
-            topUrlsList.appendChild(li);
-        }
-    }
-
-    window.addEventListener("DOMContentLoaded", function () {
-
-        let dropArea = document.getElementById("dropArea");
-
-        dropArea.addEventListener("dragover", function (e) {
-    e.preventDefault();
-    dropArea.style.borderColor = "#22d3ee";
-    dropArea.style.background = "rgba(34, 211, 238, 0.1)";
-});
-
-        dropArea.addEventListener("dragleave", function () {
-            dropArea.style.background = "";
-        });
-
-        dropArea.addEventListener("drop", function (e) {
-            e.preventDefault();
-            dropArea.style.background = "";
-
-            let file = e.dataTransfer.files[0];
-            if (file) {
-                uploadFile(file);
-            }
-        });
-
-    });
-
-</script>
-
+<script src="/js/app.js"></script>
 </body>
 </html>
